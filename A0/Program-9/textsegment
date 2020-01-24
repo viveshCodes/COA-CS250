@@ -1,0 +1,96 @@
+User Text Segment [00400000]..[00440000]
+[00400000] 8fa40000  lw $4, 0($29)            ; 183: lw $a0 0($sp) # argc 
+[00400004] 27a50004  addiu $5, $29, 4         ; 184: addiu $a1 $sp 4 # argv 
+[00400008] 24a60004  addiu $6, $5, 4          ; 185: addiu $a2 $a1 4 # envp 
+[0040000c] 00041080  sll $2, $4, 2            ; 186: sll $v0 $a0 2 
+[00400010] 00c23021  addu $6, $6, $2          ; 187: addu $a2 $a2 $v0 
+[00400014] 0c100009  jal 0x00400024 [main]    ; 188: jal main 
+[00400018] 00000000  nop                      ; 189: nop 
+[0040001c] 3402000a  ori $2, $0, 10           ; 191: li $v0 10 
+[00400020] 0000000c  syscall                  ; 192: syscall # syscall 10 (exit) 
+[00400024] 3c041001  lui $4, 4097 [input]     ; 17: la $a0, input 
+[00400028] 340e0000  ori $14, $0, 0           ; 19: li $t6, 0 
+[0040002c] 34020000  ori $2, $0, 0            ; 20: li $v0, 0 
+[00400030] 34080000  ori $8, $0, 0            ; 21: li $t0, 0 
+[00400034] 340c0000  ori $12, $0, 0           ; 22: li $t4, 0 
+[00400038] 340a0000  ori $10, $0, 0           ; 23: li $t2, 0 
+[0040003c] 340d000a  ori $13, $0, 10          ; 24: li $t5, 10 
+[00400040] 34110030  ori $17, $0, 48          ; 25: li $s1,'0' 
+[00400044] 34120039  ori $18, $0, 57          ; 26: li $s2,'9' 
+[00400048] 00885020  add $10, $4, $8          ; 29: add $t2, $a0, $t0 
+[0040004c] 81490000  lb $9, 0($10)            ; 30: lb $t1, 0($t2) 
+[00400050] 814b0001  lb $11, 1($10)           ; 31: lb $t3, 1($t2) 
+[00400054] 11200014  beq $9, $0, 80 [exit-0x00400054]
+[00400058] 0131082b  sltu $1, $9, $17         ; 36: bltu $t1, $s1, error 
+[0040005c] 14200011  bne $1, $0, 68 [error-0x0040005c] 
+[00400060] 0249082b  sltu $1, $18, $9         ; 37: bltu $s2, $t1, error 
+[00400064] 1420000f  bne $1, $0, 60 [error-0x00400064] 
+[00400068] 0171082b  sltu $1, $11, $17        ; 38: bltu $t3, $s1, error 
+[0040006c] 1420000d  bne $1, $0, 52 [error-0x0040006c] 
+[00400070] 024b082b  sltu $1, $18, $11        ; 39: bltu $s2, $t3, error 
+[00400074] 1420000b  bne $1, $0, 44 [error-0x00400074] 
+[00400078] 704d1002  mul $2, $2, $13          ; 41: mul $v0, $v0, $t5 
+[0040007c] 2529ffd0  addiu $9, $9, -48        ; 43: addu $t1, $t1, -48 
+[00400080] 256bffd0  addiu $11, $11, -48      ; 45: addu $t3, $t3, -48 
+[00400084] 712d4802  mul $9, $9, $13          ; 47: mul $t1, $t1, $t5 
+[00400088] 012b4820  add $9, $9, $11          ; 48: add $t1, $t1, $t3 
+[0040008c] 2129ffd0  addi $9, $9, -48         ; 49: addi $t1, $t1, -48 
+[00400090] 01221020  add $2, $9, $2           ; 52: add $v0, $t1, $v0 
+[00400094] 25080002  addiu $8, $8, 2          ; 54: addiu $t0, $t0, 2 
+[00400098] 258c0001  addiu $12, $12, 1        ; 55: addiu $t4, $t4 ,1 
+[0040009c] 08100012  j 0x00400048 [loop]      ; 56: j loop 
+[004000a0] 21c2ffff  addi $2, $14, -1         ; 59: addi $v0,$t6,-1 
+
+Kernel Text Segment [80000000]..[80010000]
+[80000180] 0001d821  addu $27, $0, $1         ; 90: move $k1 $at # Save $at 
+[80000184] 3c019000  lui $1, -28672           ; 92: sw $v0 s1 # Not re-entrant and we can't trust $sp 
+[80000188] ac220200  sw $2, 512($1)           
+[8000018c] 3c019000  lui $1, -28672           ; 93: sw $a0 s2 # But we need to use these registers 
+[80000190] ac240204  sw $4, 516($1)           
+[80000194] 401a6800  mfc0 $26, $13            ; 95: mfc0 $k0 $13 # Cause register 
+[80000198] 001a2082  srl $4, $26, 2           ; 96: srl $a0 $k0 2 # Extract ExcCode Field 
+[8000019c] 3084001f  andi $4, $4, 31          ; 97: andi $a0 $a0 0x1f 
+[800001a0] 34020004  ori $2, $0, 4            ; 101: li $v0 4 # syscall 4 (print_str) 
+[800001a4] 3c049000  lui $4, -28672 [__m1_]   ; 102: la $a0 __m1_ 
+[800001a8] 0000000c  syscall                  ; 103: syscall 
+[800001ac] 34020001  ori $2, $0, 1            ; 105: li $v0 1 # syscall 1 (print_int) 
+[800001b0] 001a2082  srl $4, $26, 2           ; 106: srl $a0 $k0 2 # Extract ExcCode Field 
+[800001b4] 3084001f  andi $4, $4, 31          ; 107: andi $a0 $a0 0x1f 
+[800001b8] 0000000c  syscall                  ; 108: syscall 
+[800001bc] 34020004  ori $2, $0, 4            ; 110: li $v0 4 # syscall 4 (print_str) 
+[800001c0] 3344003c  andi $4, $26, 60         ; 111: andi $a0 $k0 0x3c 
+[800001c4] 3c019000  lui $1, -28672           ; 112: lw $a0 __excp($a0) 
+[800001c8] 00240821  addu $1, $1, $4          
+[800001cc] 8c240180  lw $4, 384($1)           
+[800001d0] 00000000  nop                      ; 113: nop 
+[800001d4] 0000000c  syscall                  ; 114: syscall 
+[800001d8] 34010018  ori $1, $0, 24           ; 116: bne $k0 0x18 ok_pc # Bad PC exception requires special checks 
+[800001dc] 143a0008  bne $1, $26, 32 [ok_pc-0x800001dc] 
+[800001e0] 00000000  nop                      ; 117: nop 
+[800001e4] 40047000  mfc0 $4, $14             ; 119: mfc0 $a0 $14 # EPC 
+[800001e8] 30840003  andi $4, $4, 3           ; 120: andi $a0 $a0 0x3 # Is EPC word-aligned? 
+[800001ec] 10040004  beq $0, $4, 16 [ok_pc-0x800001ec]
+[800001f0] 00000000  nop                      ; 122: nop 
+[800001f4] 3402000a  ori $2, $0, 10           ; 124: li $v0 10 # Exit on really bad PC 
+[800001f8] 0000000c  syscall                  ; 125: syscall 
+[800001fc] 34020004  ori $2, $0, 4            ; 128: li $v0 4 # syscall 4 (print_str) 
+[80000200] 3c019000  lui $1, -28672 [__m2_]   ; 129: la $a0 __m2_ 
+[80000204] 3424000d  ori $4, $1, 13 [__m2_]   
+[80000208] 0000000c  syscall                  ; 130: syscall 
+[8000020c] 001a2082  srl $4, $26, 2           ; 132: srl $a0 $k0 2 # Extract ExcCode Field 
+[80000210] 3084001f  andi $4, $4, 31          ; 133: andi $a0 $a0 0x1f 
+[80000214] 14040002  bne $0, $4, 8 [ret-0x80000214]; 134: bne $a0 0 ret # 0 means exception was an interrupt 
+[80000218] 00000000  nop                      ; 135: nop 
+[8000021c] 401a7000  mfc0 $26, $14            ; 145: mfc0 $k0 $14 # Bump EPC register 
+[80000220] 275a0004  addiu $26, $26, 4        ; 146: addiu $k0 $k0 4 # Skip faulting instruction 
+[80000224] 409a7000  mtc0 $26, $14            ; 148: mtc0 $k0 $14 
+[80000228] 3c019000  lui $1, -28672           ; 153: lw $v0 s1 # Restore other registers 
+[8000022c] 8c220200  lw $2, 512($1)           
+[80000230] 3c019000  lui $1, -28672           ; 154: lw $a0 s2 
+[80000234] 8c240204  lw $4, 516($1)           
+[80000238] 001b0821  addu $1, $0, $27         ; 157: move $at $k1 # Restore $at 
+[8000023c] 40806800  mtc0 $0, $13             ; 160: mtc0 $0 $13 # Clear Cause register 
+[80000240] 401a6000  mfc0 $26, $12            ; 162: mfc0 $k0 $12 # Set Status register 
+[80000244] 375a0001  ori $26, $26, 1          ; 163: ori $k0 0x1 # Interrupts enabled 
+[80000248] 409a6000  mtc0 $26, $12            ; 164: mtc0 $k0 $12 
+[8000024c] 42000018  eret                     ; 167: eret 
